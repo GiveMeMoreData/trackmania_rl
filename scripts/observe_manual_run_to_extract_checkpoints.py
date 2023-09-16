@@ -1,3 +1,4 @@
+import os.path
 import sys
 from pathlib import Path
 
@@ -56,6 +57,7 @@ class MainClient(Client):
         if current == target:
             self.raw_position_list.append(np.array(iface.get_simulation_state().position))
             self.race_finished = True
+            print("Race finished")
             self.extract_cp_distance_interval()
 
     # def extract_zone_centers_time_interval(self):
@@ -86,7 +88,14 @@ class MainClient(Client):
                 (2 * client.raw_position_list[-1] - self.zone_centers[-1])[None, :],
             )
         )
-        np.save(base_dir / "maps" / "map.npy", np.array(self.zone_centers).round(1))
+
+        maps_dir = os.path.join(base_dir, "maps")
+        if not os.path.exists(maps_dir):
+            os.makedirs(maps_dir)
+
+        file_path = os.path.join(maps_dir, "map.npy")
+        np.save(file_path, np.array(self.zone_centers).round(1))
+        print(f"Map saved at {file_path}")
 
 
 base_dir = Path(__file__).resolve().parents[1]
