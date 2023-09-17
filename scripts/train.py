@@ -19,8 +19,9 @@ from trackmania_rl.experience_replay.basic_experience_replay import ReplayBuffer
 base_dir = Path(__file__).resolve().parents[1]
 
 run_name = "70"
-map_name = "map5"
-zone_centers = np.load(str(base_dir / "maps" / f"{map_name}_{misc.distance_between_checkpoints}m.npy"))
+map_name = "map"
+# zone_centers = np.load(str(base_dir / "maps" / f"{map_name}_{misc.distance_between_checkpoints}m.npy"))
+zone_centers = np.load(str(base_dir / "maps" / f"{map_name}.npy"))
 
 # ========================================================
 # ARTIFICIALLY ADD MORE ZONE CENTERS AFTER THE FINISH LINE
@@ -152,7 +153,7 @@ model2 = torch.jit.script(
 ).to("cuda", memory_format=torch.channels_last)
 print(model1)
 
-optimizer1 = torch.optim.RAdam(model1.parameters(), lr=misc.learning_rate, eps=1e-4)
+optimizer1 = torch.optim.RAdam(model1.parameters(), lr=misc.learning_rate, eps=1e-6)
 # optimizer1 = torch.optim.Adam(model1.parameters(), lr=misc.learning_rate, eps=0.01)
 # optimizer1 = torch.optim.SGD(model1.parameters(), lr=misc.learning_rate, momentum=0.8)
 scaler = torch.cuda.amp.GradScaler()

@@ -53,20 +53,14 @@ def fill_buffer_from_rollout_with_n_steps_rule(
 
         rewards = np.zeros(n_steps_max).astype(np.float32)
         for j in range(1, 1 + n_steps):
-            reward = 0
             # Not sure I'll use this, maybe to ""normalize"" q-values ?
-            reward += np.sum(gammas[:j]) * misc.constant_reward_per_ms * misc.ms_per_action
+            reward_time = np.sum(gammas[:j]) * misc.constant_reward_per_ms * misc.ms_per_action
             # Reward due to meters advanced
-            reward += (
+            meters_advanced = np.array(rollout_results["meters_advanced_along_centerline"][i + 1 : i + 1 + j]) - np.array(rollout_results["meters_advanced_along_centerline"][i : i + j])
+            reward_meters_advanced = (
                 np.sum(
-                    gammas[:j]
-                    * (
-                        np.array(rollout_results["meters_advanced_along_centerline"][i + 1 : i + 1 + j])
-                        - np.array(rollout_results["meters_advanced_along_centerline"][i : i + j])
-                    )
-                )
-                * misc.reward_per_m_advanced_along_centerline
-            )
+                    gammas[:j] * meters_advanced * misc.reward_per_m_advanced_along_centerline
+            ))
             # # Reward due to speed
             # reward += (
             #     np.sum(gammas[:j] * np.array(rollout_results["display_speed"][i + 1 : i + 1 + j]))
@@ -74,12 +68,12 @@ def fill_buffer_from_rollout_with_n_steps_rule(
             #     * misc.ms_per_action
             # )
             # Reward due to press forward
-            reward += (
+            reward_forward_press = (
                 np.sum(gammas[:j] * np.array(rollout_results["input_w"][i : i + j])) * misc.reward_per_ms_press_forward * misc.ms_per_action
             )
-
-            rewards[j - 1] = reward
-
+            # print(f"step={j}, {reward_time=}, {reward_meters_advanced=}, {reward_forward_press=}, {meters_advanced=}")
+            rewards[j - 1] = reward_time + reward_meters_advanced + reward_forward_press
+        # print(f"Frame: {i}. Rewards = {rewards}")
         # Construct state description
         current_zone_idx = rollout_results["current_zone_idx"][i]
         car_position = rollout_results["car_position"][i]
